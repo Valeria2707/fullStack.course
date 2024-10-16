@@ -21,7 +21,7 @@ class Bike extends Transport {
 }
 
 class TransportFactory {
-  createTransport(options) {
+  static createTransport(options) {
     if (options.vehicleType === "car") {
       return new Car();
     } else if (options.vehicleType === "bike") {
@@ -30,14 +30,12 @@ class TransportFactory {
   }
 }
 
-const factory = new TransportFactory();
-
-const myCar = factory.createTransport({ vehicleType: "car" });
+const myCar = TransportFactory.createTransport({ vehicleType: "car" });
 myCar.ride();
 myCar.playMusic();
 myCar.stop();
 
-const myBike = factory.createTransport({ vehicleType: "bike" });
+const myBike = TransportFactory.createTransport({ vehicleType: "bike" });
 myBike.ride();
 myBike.ringBell();
 myBike.stop();
