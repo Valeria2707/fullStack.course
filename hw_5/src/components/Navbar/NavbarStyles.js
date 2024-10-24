@@ -1,4 +1,3 @@
-// NavbarStyles.js
 import { styled } from "@mui/system";
 import { Box, ListItem, ListItemText } from "@mui/material";
 
