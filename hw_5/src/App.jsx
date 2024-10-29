@@ -4,10 +4,10 @@ import Navbar from "./components/Navbar/Navbar";
 import Home from "./pages/Home/Home";
 import Heroes from "./pages/Heroes/Heroes";
 import About from "./pages/About/About";
-import Hero from "./pages/Hero/Hero";
 import Page404 from "./pages/Page404/Page404";
 import { useTheme } from "./context/ThemeContext";
 import { StyledAppContainer, StyledAppContent } from "./AppStyles";
+import Hero from "./pages/Hero/Hero";
 
 function App() {
   const { mode } = useTheme();
@@ -18,8 +18,9 @@ function App() {
         <StyledAppContent>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/heroes" element={<Heroes />} />
-            <Route path="/heroes/:id" element={<Hero />} />
+            <Route path="/heroes" element={<Heroes />}>
+              <Route path=":id" element={<Hero />} />
+            </Route>
             <Route path="/about" element={<About />} />
             <Route path="*" element={<Page404 />} />
           </Routes>
