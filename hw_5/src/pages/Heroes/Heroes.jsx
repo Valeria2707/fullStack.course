@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
 import HeroTable from "../../components/HeroTable/HeroTable";
 import useApi from "../../hooks/useApi";
 import { useTheme } from "../../context/ThemeContext";
@@ -36,6 +37,7 @@ function Heroes() {
           Sorry, there are no heroes
         </StyledTypography>
       )}
+      <Outlet />
     </StyledBox>
   );
 }

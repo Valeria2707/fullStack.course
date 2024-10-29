@@ -10,7 +10,6 @@ export const StyledContainer = styled(Box)({
   borderRadius: "12px",
   backgroundColor: "white",
   boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
-  maxWidth: "500px",
   margin: "16px auto 0",
 });
 

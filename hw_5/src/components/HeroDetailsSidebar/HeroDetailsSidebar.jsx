@@ -13,7 +13,7 @@ function HeroDetailsSidebar({ hero }) {
   const { mode } = useTheme();
   const navigate = useNavigate();
 
-  const handleBack = () => navigate(-1);
+  const handleClose = () => navigate("/heroes");
 
   return (
     <StyledContainer>
@@ -25,8 +25,8 @@ function HeroDetailsSidebar({ hero }) {
       />
       <StyledTitle variant="h6">{hero.name}</StyledTitle>
       <StyledText variant="body1">Status: {hero.status}</StyledText>
-      <StyledButton onClick={handleBack} variant="contained" mode={mode}>
-        Back
+      <StyledButton onClick={handleClose} variant="contained" mode={mode}>
+        Close
       </StyledButton>
     </StyledContainer>
   );
