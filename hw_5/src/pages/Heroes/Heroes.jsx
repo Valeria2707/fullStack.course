@@ -1,31 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import HeroTable from "../../components/HeroTable/HeroTable";
-import useApi from "../../hooks/useApi";
+import { useRequest } from "ahooks";
 import { useTheme } from "../../context/ThemeContext";
 import { StyledBox, StyledTypography } from "./HeroesStyles";
+import { fetchHeroes } from "../../api/heros";
 
 function Heroes() {
   const { mode } = useTheme();
   const [heroes, setHeroes] = useState([]);
   const isHeroes = heroes.length > 0;
 
-  const {
-    data: dataHeroes,
-    error: errorHeroes,
-    loading: loadingHeroes,
-  } = useApi("https://rickandmortyapi.com/api/character?page=1");
+  const { data, error, loading } = useRequest(() => fetchHeroes(1), {
+    retryCount: 3,
+  });
 
   useEffect(() => {
-    if (dataHeroes?.results) {
-      setHeroes(dataHeroes.results);
+    if (data?.results) {
+      setHeroes(data.results);
     }
-  }, [dataHeroes]);
+  }, [data]);
 
-  if (errorHeroes)
+  if (error)
     return <StyledTypography mode={mode}>Error loading data</StyledTypography>;
 
-  if (loadingHeroes)
+  if (loading)
     return <StyledTypography mode={mode}>Loading...</StyledTypography>;
 
   return (
