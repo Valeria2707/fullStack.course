@@ -1,28 +1,26 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import useApi from "../../hooks/useApi";
+import { useRequest } from "ahooks";
 import HeroDetailsSidebar from "../../components/HeroDetailsSidebar/HeroDetailsSidebar";
-import Page404 from "../Page404/Page404";
 import { useTheme } from "../../context/ThemeContext";
 import { StyledTypography } from "./HeroStyles";
+import { fetchHeroById } from "../../api/hero";
 
 export default function Hero() {
   const { id } = useParams();
   const { mode } = useTheme();
 
-  const {
-    data: dataHero,
-    error: errorHero,
-    loading: loadingHero,
-  } = useApi(`https://rickandmortyapi.com/api/character/${id}`);
+  const { data, error, loading } = useRequest(() => fetchHeroById(id), {
+    refreshDeps: [id],
+  });
 
-  const isHero = dataHero && id && !dataHero.error;
+  const isHero = data && id;
 
-  if (errorHero)
+  if (error)
     return <StyledTypography mode={mode}>Error loading data</StyledTypography>;
 
-  if (loadingHero)
+  if (loading)
     return <StyledTypography mode={mode}>Loading...</StyledTypography>;
 
-  return <>{isHero ? <HeroDetailsSidebar hero={dataHero} /> : <Page404 />}</>;
+  return <>{isHero && <HeroDetailsSidebar hero={data} />}</>;
 }
