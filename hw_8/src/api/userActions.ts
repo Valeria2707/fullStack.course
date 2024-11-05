@@ -37,9 +37,6 @@ export const userApi = createApi({
         if (response.access_token) {
           localStorage.setItem("token", response.access_token);
           localStorage.setItem("userName", response.userName);
-          if (response.userId !== null && response.userId !== undefined) {
-            localStorage.setItem("userId", response.userId.toString());
-          }
         }
         return response;
       },
@@ -54,9 +51,6 @@ export const userApi = createApi({
         if (response.access_token) {
           localStorage.setItem("token", response.access_token);
           localStorage.setItem("userName", response.userName);
-          if (response.userId !== null && response.userId !== undefined) {
-            localStorage.setItem("userId", response.userId.toString());
-          }
         }
         return response;
       },

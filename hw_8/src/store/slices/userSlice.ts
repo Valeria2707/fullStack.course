@@ -13,7 +13,6 @@ const initialState: UserState = {
       ? {
           userName: localStorage.getItem("userName") ?? "",
           access_token: localStorage.getItem("token") ?? "",
-          userId: Number(localStorage.getItem("userId")) || 0,
         }
       : null,
   loading: false,
