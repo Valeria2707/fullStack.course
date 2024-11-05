@@ -60,7 +60,6 @@ export const userApi = createApi({
         try {
           localStorage.removeItem("token");
           localStorage.removeItem("userName");
-          localStorage.removeItem("userId");
           return { data: undefined };
         } catch {
           return {
