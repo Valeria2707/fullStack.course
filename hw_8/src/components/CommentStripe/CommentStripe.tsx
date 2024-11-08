@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRequest } from "ahooks";
 import {
   getCommentsByPostIdAPI,
   deleteCommentAPI,
@@ -7,37 +7,42 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import Comment from "../Comment/Comment";
-import { Comment as CommentProps } from "../../types/Comment";
 import { CommentStripeContainer } from "./CommentStripe.styles";
+import { Comment as CommentProps } from "../../types/Comment";
 
 const CommentStripe = ({ postId }: { postId: number }) => {
+  const [comments, setComments] = useState<CommentProps[]>([]);
   const [showAddComment, setShowAddComment] = useState<boolean>(false);
   const currentUser = useSelector((state: RootState) => state.user.user);
 
-  console.log(currentUser);
-  const queryClient = useQueryClient();
+  const { loading: isLoading, error } = useRequest(
+    () => getCommentsByPostIdAPI(postId).then((res) => res.data),
+    {
+      onSuccess: (data) => setComments(data),
+    }
+  );
 
-  const {
-    data: comments,
-    isLoading,
-    isError,
-    error,
-  } = useQuery<CommentProps[], Error>({
-    queryKey: ["comments", postId],
-    queryFn: () => getCommentsByPostIdAPI(postId).then((res) => res.data),
-  });
-
-  const deleteCommentMutation = useMutation({
-    mutationFn: (commentId: number) => deleteCommentAPI(postId, commentId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] }),
-    onError: () => {
-      console.error("Не вдалося видалити коментар");
+  const { run: deleteComment, loading: isDeleting } = useRequest(
+    async (commentId: number) => {
+      await deleteCommentAPI(postId, commentId);
+      return commentId;
     },
-  });
+    {
+      manual: true,
+      onSuccess: (deletedCommentId: number) =>
+        setComments((prevComments) =>
+          prevComments.filter((comment) => comment.id !== deletedCommentId)
+        ),
+      onError: () => console.error("Не вдалося видалити коментар"),
+    }
+  );
+
+  const handleAddComment = (newComment: CommentProps) => {
+    setComments((prevComments) => [newComment, ...prevComments]);
+  };
 
   const handleDeleteComment = (commentId: number) => {
-    deleteCommentMutation.mutate(commentId);
+    deleteComment(commentId);
   };
 
   const handleAddCommentClick = () => {
@@ -46,21 +51,24 @@ const CommentStripe = ({ postId }: { postId: number }) => {
 
   if (isLoading) return <div>Завантаження коментарів...</div>;
 
-  if (isError)
-    return <div>{error?.message || "Не вдалося завантажити коментарі."}</div>;
+  if (error)
+    return <div>{error.message || "Не вдалося завантажити коментарі."}</div>;
 
   return (
     <CommentStripeContainer>
       <h3>Коментарі</h3>
-      {comments && comments.length > 0 ? (
+      {comments.length > 0 ? (
         <ul style={{ width: "100%" }}>
-          {comments.map((comment) => (
+          {comments.map((comment: CommentProps) => (
             <li key={comment.id}>
               <strong>{comment.text}</strong>
               <p>Автор: {comment.user.username}</p>
               {currentUser &&
                 comment.user.username === currentUser.userName && (
-                  <button onClick={() => handleDeleteComment(comment.id)}>
+                  <button
+                    onClick={() => handleDeleteComment(comment.id)}
+                    disabled={isDeleting}
+                  >
                     Видалити
                   </button>
                 )}
@@ -76,7 +84,7 @@ const CommentStripe = ({ postId }: { postId: number }) => {
 
       {showAddComment && (
         <div style={{ width: "80%" }}>
-          <Comment postId={postId} />
+          <Comment postId={postId} onAddComment={handleAddComment} />
         </div>
       )}
     </CommentStripeContainer>

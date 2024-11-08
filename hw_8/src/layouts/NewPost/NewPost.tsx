@@ -1,71 +1,66 @@
-import React, { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useRequest } from "ahooks";
 import { createExhibitAPI } from "../../api/exhibitActions";
 import { NewPostContainer } from "./NewPost.styles";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import { validationSchema } from "./NewPost.validators";
 
 const NewPost = () => {
-  const [image, setImage] = useState<File | null>(null);
-  const [description, setDescription] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const mutation = useMutation({
-    mutationFn: createExhibitAPI,
-    onSuccess: () => {
-      navigate("/home");
-    },
-    onError: (err) => {
-      console.error("Помилка при створенні поста:", err);
-      setError("Не вдалося створити пост.");
-    },
+  const { run: createPost, loading } = useRequest(createExhibitAPI, {
+    manual: true,
+    onSuccess: () => navigate("/home"),
+    onError: (err) => console.error("Помилка при створенні поста:", err),
   });
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setImage(e.target.files[0]);
-    }
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!image) {
-      setError("Будь ласка, виберіть зображення.");
-      return;
-    }
-
-    setError(null);
-    mutation.mutate({ image, description });
-  };
 
   return (
     <NewPostContainer>
       <h1>Створити новий пост</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="image">Зображення:</label>
-          <input
-            type="file"
-            id="image"
-            onChange={handleFileChange}
-            accept="image/*"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="description">Опис:</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </div>
-        {error && <div className="error">{error}</div>}
-        <button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Завантаження..." : "Створити пост"}
-        </button>
-      </form>
+      <Formik
+        initialValues={{ image: null, description: "" }}
+        validationSchema={validationSchema}
+        onSubmit={(values, { setSubmitting }) => {
+          if (values.image) {
+            createPost({
+              image: values.image,
+              description: values.description,
+            });
+          }
+          setSubmitting(false);
+        }}
+      >
+        {({ setFieldValue, isSubmitting }) => (
+          <Form>
+            <div>
+              <label htmlFor="image">Зображення:</label>
+              <input
+                type="file"
+                id="image"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    setFieldValue("image", e.target.files[0]);
+                  }
+                }}
+                accept="image/*"
+              />
+              <ErrorMessage name="image" component="div" className="error" />
+            </div>
+            <div>
+              <label htmlFor="description">Опис:</label>
+              <Field as="textarea" id="description" name="description" />
+              <ErrorMessage
+                name="description"
+                component="div"
+                className="error"
+              />
+            </div>
+            <button type="submit" disabled={isSubmitting || loading}>
+              {loading ? "Завантаження..." : "Створити пост"}
+            </button>
+          </Form>
+        )}
+      </Formik>
     </NewPostContainer>
   );
 };

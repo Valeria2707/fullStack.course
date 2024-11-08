@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRequest } from "ahooks";
 import { getAllExhibitsAPI, deleteExhibitAPI } from "../../api/exhibitActions";
 import Post from "../../components/Post/Post";
 import { Exhibit } from "../../types/Exhibit";
@@ -17,36 +17,25 @@ import {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [logout] = useLogoutMutation();
 
   const {
-    data: exhibits,
-    isLoading,
-    isError,
+    data: response,
+    loading: isLoading,
     error,
-  } = useQuery<Exhibit[], Error>({
-    queryKey: ["exhibits"],
-    queryFn: async () => {
-      const response = await getAllExhibitsAPI();
-      return response.data.data;
-    },
-  });
+    refresh,
+  } = useRequest(getAllExhibitsAPI);
 
-  const deleteMutation = useMutation<number, Error, number>({
-    mutationFn: deleteExhibitAPI,
-    onSuccess: (deletedId) => {
-      queryClient.setQueryData<Exhibit[]>(["exhibits"], (oldData) =>
-        oldData ? oldData.filter((exhibit) => exhibit.id !== deletedId) : []
-      );
-    },
-    onError: () => {
-      console.error("Помилка при видаленні поста");
-    },
+  const exhibits: Exhibit[] = response ? response.data.data : [];
+
+  const { run: deletePost } = useRequest(deleteExhibitAPI, {
+    manual: true,
+    onSuccess: () => refresh(),
+    onError: () => console.error("Помилка при видаленні поста"),
   });
 
   const handleDeletePost = (id: number) => {
-    deleteMutation.mutate(id);
+    deletePost(id);
   };
 
   const handleLogout = async () => {
@@ -63,7 +52,7 @@ const HomePage = () => {
     pageCount,
     handlePageChange,
   } = usePagination<Exhibit>({
-    data: exhibits || [],
+    data: exhibits,
     itemsPerPage: POSTS_PER_PAGE,
   });
 
@@ -71,8 +60,7 @@ const HomePage = () => {
 
   if (isLoading) return <div>Завантаження...</div>;
 
-  if (isError)
-    return <div>Помилка: {error?.message || "Щось пішло не так"}</div>;
+  if (error) return <div>Помилка: {error?.message || "Щось пішло не так"}</div>;
 
   return (
     <HomePageContainer>
@@ -82,7 +70,7 @@ const HomePage = () => {
         </ActionButton>
         <ActionButton onClick={handleLogout}>Logout</ActionButton>
       </ActionButtonsContainer>
-      <Header>Мої пости</Header>
+      <Header>Пости</Header>
       {currentExhibits.length === 0 ? (
         <div>Немає доступних постів.</div>
       ) : (

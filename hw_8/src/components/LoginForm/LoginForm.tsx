@@ -1,16 +1,16 @@
-import { useState, FormEvent, useEffect } from "react";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../store/store";
 import { useLoginUserMutation } from "../../api/userActions";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import { FormContainer } from "./LoginForm.styles";
+import { validationSchema } from "./LoginForm.validators";
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const user = useSelector((state: RootState) => state.user.user);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
   useEffect(() => {
     if (user || localStorage.getItem("token")) {
@@ -18,10 +18,12 @@ const LoginForm = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: {
+    username: string;
+    password: string;
+  }) => {
     try {
-      const response = await loginUser({ username, password });
+      const response = await loginUser(values);
       if (response) {
         navigate("/home");
       }
@@ -33,34 +35,44 @@ const LoginForm = () => {
   const handleRegister = () => navigate("/register");
 
   return (
-    <FormContainer onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="username">Ім'я:</label>
-        <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="password">Пароль:</label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? "Вхід..." : "Увійти"}
-      </button>
-      <button type="button" onClick={handleRegister}>
-        Зареєструватись
-      </button>
-    </FormContainer>
+    <Formik
+      initialValues={{ username: "", password: "" }}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ isSubmitting }) => (
+        <FormContainer>
+          <Form>
+            <div>
+              <label htmlFor="username">Ім'я:</label>
+              <Field type="text" id="username" name="username" required />
+              <ErrorMessage name="username" component="div" className="error" />
+            </div>
+            <div>
+              <label htmlFor="password">Пароль:</label>
+              <Field type="password" id="password" name="password" required />
+              <ErrorMessage name="password" component="div" className="error" />
+            </div>
+            <div>
+              <button
+                type="submit"
+                disabled={isSubmitting || isLoading}
+                style={{ marginTop: "15px" }}
+              >
+                {isLoading ? "Вхід..." : "Увійти"}
+              </button>
+              <button
+                type="button"
+                onClick={handleRegister}
+                style={{ marginTop: "15px" }}
+              >
+                Зареєструватись
+              </button>
+            </div>
+          </Form>
+        </FormContainer>
+      )}
+    </Formik>
   );
 };
 

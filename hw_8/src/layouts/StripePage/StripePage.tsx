@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useRequest } from "ahooks";
 import { getAllExhibitsAPI } from "../../api/exhibitActions";
 import Post from "../../components/Post/Post";
 import { Exhibit } from "../../types/Exhibit";
@@ -19,20 +19,16 @@ const StripePage = () => {
   const token = localStorage.getItem("token");
   const [logout] = useLogoutMutation();
 
-  const { data, isLoading, isError, error } = useQuery<Exhibit[], Error>({
-    queryKey: ["exhibits"],
-    queryFn: async () => {
-      const response = await getAllExhibitsAPI();
-      return response.data.data;
-    },
-  });
+  const { data: response, loading, error } = useRequest(getAllExhibitsAPI);
+
+  const data: Exhibit[] = response ? response.data.data : [];
 
   const {
     currentData: currentExhibits,
     pageCount,
     handlePageChange,
   } = usePagination<Exhibit>({
-    data,
+    data: (data as Exhibit[]) || [],
     itemsPerPage: POSTS_PER_PAGE,
   });
 
@@ -49,9 +45,9 @@ const StripePage = () => {
     }
   };
 
-  if (isLoading) return <div>Завантаження...</div>;
+  if (loading) return <div>Завантаження...</div>;
 
-  if (isError) return <div>Помилка: {error?.message || "Сталася помилка"}</div>;
+  if (error) return <div>Помилка: {error?.message || "Сталася помилка"}</div>;
 
   return (
     <StripePageContainer>
