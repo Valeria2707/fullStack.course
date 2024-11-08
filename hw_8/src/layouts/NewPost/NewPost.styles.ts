@@ -59,9 +59,9 @@ export const NewPostContainer = styled.div`
     }
 
     .error {
-      color: #d63384;
-      font-size: 0.875rem;
-      text-align: center;
+      color: red;
+      font-size: 0.875em;
+      margin-top: 0.25em;
     }
 
     button {

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const FormContainer = styled.form`
+export const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 300px;
@@ -50,7 +50,8 @@ export const FormContainer = styled.form`
   }
 
   .error {
-    color: #d63384;
-    font-size: 0.875rem;
+    color: red;
+    font-size: 0.875em;
+    margin-top: 0.25em;
   }
 `;

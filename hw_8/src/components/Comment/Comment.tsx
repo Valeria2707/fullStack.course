@@ -1,41 +1,44 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRequest } from "ahooks";
 import { createCommentAPI } from "../../api/commentActions";
+import { Comment as CommentProps } from "../../types/Comment";
 import { CommentContainer } from "./Comment.styles";
 
-const Comment = ({ postId }: { postId: number }) => {
-  const [newComment, setNewComment] = useState<string>("");
-  const queryClient = useQueryClient();
+interface Props {
+  postId: number;
+  onAddComment: (newComment: CommentProps) => void;
+}
 
-  const addCommentMutation = useMutation({
-    mutationFn: (newComment: string) => createCommentAPI(postId, newComment),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
-      setNewComment("");
-    },
-    onError: () => {
-      console.error("Не вдалося додати коментар.");
-    },
-  });
+const Comment = ({ postId, onAddComment }: Props) => {
+  const [newCommentText, setNewCommentText] = useState<string>("");
+
+  const { run: addComment, loading: isAdding } = useRequest(
+    (text: string) => createCommentAPI(postId, text).then((res) => res.data),
+    {
+      manual: true,
+      onSuccess: (newComment) => {
+        onAddComment(newComment);
+        setNewCommentText("");
+      },
+      onError: () => console.error("Не вдалося додати коментар"),
+    }
+  );
 
   const handleAddComment = () => {
-    if (newComment.trim()) {
-      addCommentMutation.mutate(newComment);
+    if (newCommentText.trim()) {
+      addComment(newCommentText);
     }
   };
 
   return (
     <CommentContainer>
       <textarea
-        value={newComment}
-        onChange={(e) => setNewComment(e.target.value)}
+        value={newCommentText}
+        onChange={(e) => setNewCommentText(e.target.value)}
         placeholder="Напишіть коментар"
       />
-      <button
-        onClick={handleAddComment}
-        disabled={addCommentMutation.isPending}
-      >
-        {addCommentMutation.isPending ? "Збереження..." : "Зберегти"}
+      <button onClick={handleAddComment} disabled={isAdding}>
+        {isAdding ? "Збереження..." : "Зберегти"}
       </button>
     </CommentContainer>
   );
