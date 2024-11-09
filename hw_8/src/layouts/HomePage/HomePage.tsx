@@ -14,10 +14,14 @@ import {
   ActionButton,
   PaginationContainer,
 } from "./HomePage.styles";
+import useSetInitialUserData from "../../hooks/useSetInitialUserData";
+import Notifications from "../../components/Notifications/Notifications";
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [logout] = useLogoutMutation();
+
+  useSetInitialUserData();
 
   const {
     data: response,
@@ -71,6 +75,7 @@ const HomePage = () => {
         <ActionButton onClick={handleLogout}>Logout</ActionButton>
       </ActionButtonsContainer>
       <Header>Пости</Header>
+      <Notifications />
       {currentExhibits.length === 0 ? (
         <div>Немає доступних постів.</div>
       ) : (
