@@ -7,17 +7,7 @@ interface UserState {
   error: string | null;
 }
 
-const initialState: UserState = {
-  user:
-    localStorage.getItem("userName") && localStorage.getItem("token")
-      ? {
-          userName: localStorage.getItem("userName") ?? "",
-          access_token: localStorage.getItem("token") ?? "",
-        }
-      : null,
-  loading: false,
-  error: null,
-};
+const initialState: UserState = { user: null, loading: false, error: null };
 
 const userSlice = createSlice({
   name: "user",
