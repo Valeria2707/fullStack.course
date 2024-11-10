@@ -15,13 +15,15 @@ import {
   PaginationContainer,
 } from "./HomePage.styles";
 import useSetInitialUserData from "../../hooks/useSetInitialUserData";
-import Notifications from "../../components/Notifications/Notifications";
+import useNotifications from "../../hooks/useNotifications";
+import { ToastContainer } from "react-toastify";
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [logout] = useLogoutMutation();
 
   useSetInitialUserData();
+  useNotifications();
 
   const {
     data: response,
@@ -68,6 +70,7 @@ const HomePage = () => {
 
   return (
     <HomePageContainer>
+      <ToastContainer position="top-center" />
       <ActionButtonsContainer>
         <ActionButton onClick={handleRedirectToNewPostPage}>
           Добавити новий пост
@@ -75,7 +78,6 @@ const HomePage = () => {
         <ActionButton onClick={handleLogout}>Logout</ActionButton>
       </ActionButtonsContainer>
       <Header>Пости</Header>
-      <Notifications />
       {currentExhibits.length === 0 ? (
         <div>Немає доступних постів.</div>
       ) : (
