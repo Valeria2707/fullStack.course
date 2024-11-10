@@ -70,7 +70,7 @@ const HomePage = () => {
 
   return (
     <HomePageContainer>
-      <ToastContainer position="top-center" />
+      <ToastContainer />
       <ActionButtonsContainer>
         <ActionButton onClick={handleRedirectToNewPostPage}>
           Добавити новий пост
