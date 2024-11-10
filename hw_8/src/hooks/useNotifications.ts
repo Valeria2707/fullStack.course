@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const SOCKET_SERVER_URL =
-  import.meta.env.VITE_SERVER_BASE_URL + "notifications";
+  "http://ec2-13-49-67-34.eu-north-1.compute.amazonaws.com/" + "notifications";
 
 const useNotifications = () => {
   useEffect(() => {
