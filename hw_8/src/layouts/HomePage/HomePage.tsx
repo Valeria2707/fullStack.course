@@ -54,7 +54,7 @@ const HomePage = () => {
   const handleRedirectToNewPostPage = () => navigate("/new-post");
 
   const handlePageChange = ({ selected }: { selected: number }) => {
-    setSearchParams({ page: (selected + 1).toString() });
+    setSearchParams({ page: String(selected + 1) });
   };
 
   if (loading) return <div>Завантаження...</div>;
