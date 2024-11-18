@@ -1,8 +1,13 @@
 import { CreateExhibitData, GetExhibitsResponse } from "../types/Exhibit";
 import axiosInstance from "./axiosInstance";
 
-export const getAllExhibitsAPI = () => {
-  return axiosInstance.get<GetExhibitsResponse>("/api/exhibits");
+export const getAllExhibitsAPI = async (
+  page: number
+): Promise<GetExhibitsResponse> => {
+  const response = await axiosInstance.get<GetExhibitsResponse>(
+    `/api/exhibits?page=${page}&limit=10`
+  );
+  return response.data;
 };
 
 export const createExhibitAPI = (data: CreateExhibitData) => {

@@ -15,7 +15,7 @@ export interface CreateExhibitData {
 
 export interface GetExhibitsResponse {
   data: Exhibit[];
-  lasrPage: number;
+  lastPage: number;
   page: number;
   total: number;
 }
