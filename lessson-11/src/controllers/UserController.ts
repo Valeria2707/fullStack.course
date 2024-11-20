@@ -9,92 +9,67 @@ import {
   Body,
   OnUndefined,
 } from "routing-controllers";
-import { ValidateArgs } from "../decorators/validator";
-import * as fs from "fs/promises";
-
-interface User {
-  id: number;
-  user: string;
-  email: string;
-}
-
-const USERS_FILE = "../users.json";
-
-async function readUsersFromFile(): Promise<User[]> {
-  try {
-    const data = await fs.readFile(USERS_FILE, "utf-8");
-    return JSON.parse(data) as User[];
-  } catch {
-    return [];
-  }
-}
-
-async function writeUsersToFile(users: User[]): Promise<void> {
-  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
-}
+import { User } from "../entity/User";
+import { AppDataSource } from "../ormconfig";
 
 @JsonController("/users")
 export class UserController {
+  private userRepository = AppDataSource.getRepository(User);
+
   @Get("/")
   async getAll() {
-    return await readUsersFromFile();
+    return await this.userRepository.find();
   }
 
   @Get("/:id")
   @OnUndefined(404)
-  async getOne(@Param("id") id: number) {
-    const users = await readUsersFromFile();
-    return users.find((user) => user.id === id);
+  async getOne(@Param("id") id: string) {
+    return await this.userRepository.findOneBy({ id });
   }
 
   @Post("/")
-  @ValidateArgs("Validate new user")
-  async create(@Body() newUser: { user: string; email: string }) {
-    const users = await readUsersFromFile();
-
-    const user: User = {
-      id: users.length > 0 ? users[users.length - 1].id + 1 : 1,
-      user: newUser.user,
+  async create(@Body() newUser: { name: string; email: string }) {
+    const user = this.userRepository.create({
+      name: newUser.name,
       email: newUser.email,
-    };
+    });
 
-    users.push(user);
-    await writeUsersToFile(users);
+    await this.userRepository.save(user);
 
     return { message: "User created", user };
   }
 
   @Patch("/:id")
-  @ValidateArgs("Validate updated user")
+  @OnUndefined(404)
   async update(
-    @Param("id") id: number,
-    @Body() updatedData: { user?: string; email?: string }
+    @Param("id") id: string,
+    @Body() updatedData: { name?: string; email?: string }
   ) {
-    const users = await readUsersFromFile();
-    const userIndex = users.findIndex((user) => user.id === id);
+    const user = await this.userRepository.findOneBy({ id });
 
-    if (userIndex === -1) {
+    if (!user) {
       return { message: "User not found" };
     }
 
-    if (updatedData.user) users[userIndex].user = updatedData.user;
-    if (updatedData.email) users[userIndex].email = updatedData.email;
+    if (updatedData.name) user.name = updatedData.name;
+    if (updatedData.email) user.email = updatedData.email;
 
-    await writeUsersToFile(users);
-    return { message: "User updated", user: users[userIndex] };
+    await this.userRepository.save(user);
+
+    return { message: "User updated", user };
   }
 
   @Delete("/:id")
   @OnUndefined(404)
-  async delete(@Param("id") id: number) {
-    const users = await readUsersFromFile();
-    const newUsers = users.filter((user) => user.id !== id);
+  async delete(@Param("id") id: string) {
+    const user = await this.userRepository.findOneBy({ id });
 
-    if (users.length === newUsers.length) {
+    if (!user) {
       return { message: "User not found" };
     }
 
-    await writeUsersToFile(newUsers);
+    await this.userRepository.remove(user);
+
     return { message: "User deleted successfully" };
   }
 }
